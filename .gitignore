@@ -1,7 +1,0 @@
-# Fichiers système / cache
-.DS_Store
-Thumbs.db
-
-# VS Code / VSCodium
-.vscode/
-
