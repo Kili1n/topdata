@@ -8,51 +8,37 @@ document.addEventListener("DOMContentLoaded", async () => {
     "data/idf-equipement-sportif.csv"
   );
 
-  let allEquipementsInEachDep = {};
-  idf_equipement_sportif.forEach((equipement) => {
-    // --- Début de la section corrigée pour éviter les 'NaN' ---
-
-    // IMPORTANT : Assurez-vous que `equipement.nb_equipement` correspond
-    // exactement au nom de l'en-tête dans votre fichier CSV.
-    const valeurEquipement = parseInt(equipement.equip_type_name, 10) || 0;
-
-    // On s'assure que la ligne est valide (a un code département et des équipements)
-    if (equipement.dep_code && valeurEquipement > 0) {
-      if (allEquipementsInEachDep[equipement.dep_code]) {
-        allEquipementsInEachDep[equipement.dep_code].nb_infra += valeurEquipement;
-      } else {
-        allEquipementsInEachDep[equipement.dep_code] = {
-          code_dep: equipement.dep_code,
-          nb_infra: valeurEquipement,
-        };
-      }
-    }
-    // --- Fin de la section corrigée ---
-  });
-
-  // Charger le GeoJSON
   const geojson = await d3.json("data/departements.geojson");
 
-  // Garder seulement les départements de l'Île-de-France
   const idfDeps = ["75", "77", "78", "91", "92", "93", "94", "95"];
-  geojson.features = geojson.features.filter(d => idfDeps.includes(d.properties.code));
-
-  // Ajouter les données
+  
   geojson.features.forEach((feat) => {
+
     let code = feat.properties.code;
-    let depData = allEquipementsInEachDep[code];
-    feat.properties.nb_infra = depData ? depData.nb_infra : 0;
+    let depNbInfra;
+    for (let i = 0; i < idf_equipement_sportif.length; i++) {
+      if (idf_equipement_sportif[i].dep_code == code) {
+
+        depNbInfra = +idf_equipement_sportif[i].equip_type_name;
+      }
+    }
+
+    if (depNbInfra) {
+      feat.properties.nb_infra = depNbInfra;
+    } else {
+      feat.properties.nb_infra = 0;
+    }
   });
 
-  const width = 700,
-    height = 600;
+  const width = 700;
+  const height = 600;
 
   // Projection centrée sur l'IDF
   const projection = d3
     .geoMercator()
     .center([2.5, 48.8])
-    .scale(15000)
-    .translate([width / 2, height / 2 - 50]);
+    .scale(18000)
+    .translate([width / 2 + 125, height / 2 + 50]);
 
   const path = d3.geoPath().projection(projection);
 
@@ -87,12 +73,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     .data(geojson.features)
     .join("text")
     .attr("transform", (d) => `translate(${path.centroid(d)})`)
-    .attr("text-anchor", "middle")
-    .attr("dy", "0.35em")
+    .attr("text-anchor", "end")
     .style("font-size", "10px")
-    .style("fill", "black")
-    .style("text-shadow", "0px 0px 3px white")
-    .text((d) => d3.format(".4")(d.properties.nb_infra));
+    .style("fill", "white")
+    .text((d) => d.properties.nb_infra);
 
   // Ajouter une légende
   const legendWidth = 200,
@@ -100,7 +84,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const legendSvg = svg
     .append("g")
-    .attr("transform", `translate(${width - legendWidth - 20},${height - 40})`);
+    .attr("transform", `translate(${width - legendWidth + 175},${height + 50})`);
 
   const legendScale = d3
     .scaleLinear()

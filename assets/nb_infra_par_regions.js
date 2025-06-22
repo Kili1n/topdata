@@ -4,22 +4,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     .getElementById("loader-graph-infra-regions")
     .classList.remove("hidden");
 
-  // Chargement du CSV
   let equipementsParRegion = await d3.dsv(";", "data/data-es2.csv");
 
-  // Conversion des valeurs en nombre
+  // Conversion des strings en nombre
   equipementsParRegion.forEach((d) => {
     d.nb_infra = +d.equip_type_name;
-    d.reg_nom = d.reg_nom;
   });
 
-  // Option : filtrer les régions avec plus de 5000 infrastructures
-  let data = equipementsParRegion.filter((d) => d.nb_infra > 5000);
+  let data = equipementsParRegion.filter((d) => d.nb_infra > 17000); //Prend en compte uniquement les régions avec plus de 17 000 infrastructures (permet de garder uniquement 10 régions)
 
-  // Debug
-  console.log(data);
-
-  // Dimensions
   const width = 2200;
   const spaceForTexte = 100;
   const height = 500;
@@ -28,11 +21,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const marginBottom = 40;
   const marginLeft = 40;
   const taillePolice = "14px";
+  const nb_infra_max = 45000;
 
-  // Détermination du max dynamique
-  const nb_infra_max = d3.max(data, d => d.nb_infra);
 
-  // Échelle X
   const x = d3
     .scaleBand()
     .domain(
@@ -47,13 +38,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const xAxis = d3.axisBottom(x).tickSizeOuter(0);
 
-  // Échelle Y
   const y = d3
     .scaleLinear()
     .domain([0, nb_infra_max])
     .range([height - marginBottom, marginTop]);
 
-  // Création du SVG
   const svg = d3
     .select("#graph-infra-par-regions")
     .append("svg")
@@ -61,9 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     .attr("height", height)
     .attr("viewBox", [0, 0, width, height])
     .attr("style", "max-width: 100%; height: auto;")
-    .call(zoom);
 
-  // Barres
   svg
     .append("g")
     .attr("class", "bars")
@@ -74,9 +61,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     .attr("x", (d) => x(d.reg_nom))
     .attr("y", (d) => y(d.nb_infra))
     .attr("height", (d) => y(0) - y(d.nb_infra))
-    .attr("width", x.bandwidth());
+    .attr("width", x.bandwidth())
+    .append("title")
+    .text((d) => "La région " + d.reg_nom +" possède "+d.nb_infra+" infrastructures");
 
-  // Axe X
   svg
     .append("g")
     .attr("class", "x-axis")
@@ -93,7 +81,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         .style("font-size", taillePolice)
     );
 
-  // Axe Y
   svg
     .append("g")
     .attr("class", "y-axis")
@@ -110,34 +97,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         .text("Nombre d'infrastructure")
         .style("font-size", taillePolice)
     );
-
-  // Fonction de zoom
-  function zoom(svg) {
-    const extent = [
-      [marginLeft, marginTop],
-      [width - marginRight, height - marginTop],
-    ];
-
-    svg.call(
-      d3
-        .zoom()
-        .scaleExtent([1, 8])
-        .translateExtent(extent)
-        .extent(extent)
-        .on("zoom", zoomed)
-    );
-
-    function zoomed(event) {
-      x.range(
-        [marginLeft, width - marginRight].map((d) => event.transform.applyX(d))
-      );
-      svg
-        .selectAll(".bars rect")
-        .attr("x", (d) => x(d.reg_nom))
-        .attr("width", x.bandwidth());
-      svg.selectAll(".x-axis").call(xAxis);
-    }
-  }
 
   document.getElementById("loader-graph-infra-regions").classList.add("hidden");
 });

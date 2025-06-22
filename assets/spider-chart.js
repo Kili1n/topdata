@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const margin = 70;
 
-  const radius = height / 2 - margin;
+  const radius = 180;
 
   const svg = d3
     .select("#mySvg")
@@ -55,7 +55,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const angleSlice = (Math.PI * 2) / data.length; //Calcul l'angle nécessaire pour pour chaque donnée
 
-    const rScale = d3.scaleLinear().range([0, radius]).domain([0, 1]); //Création de l'échelle (prend 0 ou 1 en entrée et renvoie une valeur allant de 0 au rayon)
+    //Création de l'échelle (même si le domaine est 0, 1 D3 extrapole au dessus en suivant notre domaine)
+    //Exemple rScale(1.3) = radius * 1.3
+    const rScale = d3.scaleLinear().range([0, radius]).domain([0, 1]); 
 
     //Créer les cercles gris
     svg
@@ -76,12 +78,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       .attr("y1", 0)
       .attr(
         "x2",
-        (d, i) => rScale(1.1) * Math.cos(angleSlice * i - Math.PI / 2)
-      ) //%%
+        (d, i) => rScale(1.1) * Math.cos(angleSlice * i - Math.PI / 2) 
+      ) 
       .attr(
         "y2",
         (d, i) => rScale(1.1) * Math.sin(angleSlice * i - Math.PI / 2)
-      ) //%%
+      ) 
       .attr("stroke", "#ccc")
       .attr("stroke-dasharray", "2,2");
 
@@ -92,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         "x",
         (d, i) => rScale(1.25) * Math.cos(angleSlice * i - Math.PI / 2)
       ) //%%
-      .attr("y", (d, i) => rScale(1.2) * Math.sin(angleSlice * i - Math.PI / 2)) //%%
+      .attr("y", (d, i) => rScale(1.25) * Math.sin(angleSlice * i - Math.PI / 2)) //%%
       .text((d) => d.axis)
       .style("text-anchor", "middle")
       .style("font-size", "14px");
@@ -108,18 +110,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       .style("fill", "#555")
       .text((d) => d * 100 + "%");
 
-    //%%
+    //Créer un polygone à l'aide des différentes données
     const radarLine = d3
       .lineRadial()
       .curve(d3.curveLinearClosed)
-      .radius((d) => rScale(d.value))
-      .angle((d, i) => i * angleSlice);
+      .radius((d) => rScale(d.value)) //Calcul le rayon de chacun des points
+      .angle((d, i) => i * angleSlice); //Calcul l'angle sur lequel devra se placer le point
 
     //Permet de tracer le polygone correspondant aux données
     svg
       .append("path")
-      .datum(data)
-      .attr("d", radarLine)
+      .datum(data) //Récupère tout le tableau data
+      .attr("d", radarLine) //Exécute un équivalent de radarline(data)
       .attr("fill", "none")
       .attr("stroke", "black")
       .attr("stroke-width", 2);
@@ -134,12 +136,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         "x",
         (d, i) =>
           (rScale(d.value) + 15) * Math.cos(angleSlice * i - Math.PI / 2)
-      ) //%%
+      ) 
       .attr(
         "y",
         (d, i) =>
           (rScale(d.value) + 15) * Math.sin(angleSlice * i - Math.PI / 2)
-      ) //%%
+      ) 
       .text((d) => (d.value * 100).toFixed(2) + "%")
       .style("text-anchor", "middle")
       .style("font-size", "12px")

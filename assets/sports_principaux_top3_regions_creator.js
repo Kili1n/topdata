@@ -19,6 +19,8 @@ async function createBubbleChart(pID, reg) {
     return;
   }
 
+  console.log(data);
+
   const width = 800;
   const height = 800;
   const margin = 1;
@@ -33,13 +35,15 @@ async function createBubbleChart(pID, reg) {
     d3.hierarchy({ children: data }).sum((d) => parseInt(d.count))
   );
 
+  console.log(root);
+
   const svg = d3
     .select(`#${pID}`)
     .append("svg")
     .attr("width", width)
     .attr("height", height)
     .attr("viewBox", [-margin, -margin, width, height])
-    .attr("style", "max-width: 100%; height: auto; font: 10px sans-serif;")
+    .attr("style", "max-width: 100%; height: auto; font: 11.5px sans-serif;")
     .attr("text-anchor", "middle");
 
   const node = svg

@@ -12,7 +12,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let data = licencies_revenues_population;
 
-  console.log(licencies_revenues_population);
 
   // Specify the chart’s dimensions.
   const width = 928;
@@ -78,18 +77,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
 
   // Append the dots.
-  svg
+  let dots = svg
     .append("g")
-    .attr("fill", "gold")
-    .attr("stroke", "gold")
+    .attr("fill", "steelblue")
+    .attr("stroke", "steelblue")
     .attr("stroke-width", 1.5)
     .selectAll("circle")
-    .data(data)
-    .join("circle")
+    .data(data).join("circle")
     .attr(
       "transform",
       (d) => `translate(${x(d["Total_licenciés"])},${y(d["population_2017"])})`
-    )
+    );
+
+  dots.append("title")
+    .text((d) => d.Nom_Commune+" ("+d.Code_commune+") possède "+d.Total_licenciés+" licenciés pour "+d.population_2017+ " habitants");
+
+  dots
     .attr("r", 2);
 
   document
